@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>无版权图片搜索</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; }
+        header { 
+            background: #fff; 
+            padding: 16px; 
+            box-shadow: 0 2px 6px rgba(0,0,0,.08); 
+            display: flex; 
+            gap: 8px; 
+            position: sticky; 
+            top: 0; 
+            z-index: 10;
+        }
+        input, select, button { 
+            padding: 10px; 
+            border: 1px solid #ccc; 
+            border-radius: 8px; 
+            font-size: 14px;
+        }
+        input { flex: 1; outline: none; }
+        input:focus { border-color: #4f8ef7; }
+        button { 
+            background: #4f8ef7; 
+            color: #fff; 
+            border: none; 
+            cursor: pointer; 
+            transition: background 0.2s;
+        }
+        button:hover { background: #3a7be0; }
+        #grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
+            gap: 16px; 
+            padding: 16px; 
+        }
+        .card { 
+            background: #fff; 
+            padding: 14px; 
+            border-radius: 10px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .card h3 { margin: 0 0 8px 0; color: #333; }
+        .card p { margin: 0 0 12px 0; color: #666; font-size: 14px; }
+        .card a { display: block; text-decoration: none; color: #333; }
+        .card a button { width: 100%; }
+    </style>
+</head>
+<body>
+    <header>
+        <input id="q" placeholder="输入关键词，如：猫、风景、科技...">
+        <select id="s">
+            <option value="openverse">Openverse</option>
+            <option value="pixabay">Pixabay</option>
+            <option value="pexels">Pexels</option>
+            <option value="unsplash">Unsplash</option>
+            <option value="wikimedia">Wikimedia</option>
+            <option value="pakutaso">PAKUTASO(日本)</option>
+            <option value="irasutoya">いらすとや(日本)</option>
+            <option value="photoac">PhotoAC(日本)</option>
+            <option value="vcg">VCG视觉中国免费</option>
+        </select>
+        <button onclick="go()">搜索</button>
+    </header>
+    <div id="grid"></div>
+
+    <script>
+        // 获取元素
+        const q = document.getElementById('q');
+        const s = document.getElementById('s');
+        const grid = document.getElementById('grid');
+
+        // 读取本地缓存
+        q.value = localStorage.getItem('q') || "";
+        s.value = localStorage.getItem('s') || "openverse";
+
+        function go() {
+            let k = q.value.trim();
+            if (!k) return; // 如果没输入内容就不执行
+
+            // 保存搜索记录
+            localStorage.setItem('q', k);
+            localStorage.setItem('s', s.value);
+
+            // 定义各个网站的搜索链接
+            let url = {
+                openverse: `https://openverse.org/search/image?q=${encodeURIComponent(k)}`,
+                pixabay: `https://pixabay.com/images/search/${encodeURIComponent(k)}/`,
+                pexels: `https://www.pexels.com/search/${encodeURIComponent(k)}/`,
+                unsplash: `https://unsplash.com/s/photos/${encodeURIComponent(k)}`,
+                wikimedia: `https://commons.wikimedia.org/w/index.php?search=${encodeURIComponent(k)}&title=Special:MediaSearch&type=image`, // ✅ 修复：这里补上了逗号
+                pakutaso: `https://www.pakutaso.com/search.html?key=${encodeURIComponent(k)}`,
+                irasutoya: `https://www.irasutoya.com/search?q=${encodeURIComponent(k)}`,
+                photoac: `https://www.photo-ac.com/search?keyword=${encodeURIComponent(k)}`,
+                vcg: `https://www.vcg.com/creative-image/${encodeURIComponent(k)}`
+            };
+
+            // 生成结果卡片
+            grid.innerHTML = `
+                <div class="card">
+                    <h3>正在搜索: "${k}"</h3>
+                    <p>已为您准备好 ${s.options[s.selectedIndex].text} 的搜索结果，点击下方按钮在新标签页打开：</p>
+                    <a href="${url[s.value]}" target="_blank">
+                        <button>打开搜索结果</button>
+                    </a>
+                </div>
+            `;
+        }
+
+        // 监听回车键
+        q.addEventListener("keydown", e => {
+            if (e.key === "Enter") go();
+        });
+
+        // 如果本地有缓存，页面加载时自动搜索
+        if (localStorage.getItem('q')) go();
+    </script>
+</body>
+</html>
